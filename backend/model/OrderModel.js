@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const orderSchema = mongoose.Schema({
     orderedBy : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : 'User'
+        ref : 'User',
     },
     products : [
         {
@@ -12,7 +12,7 @@ const orderSchema = mongoose.Schema({
         }
     ],
     date : {
-        type : Date.now()
+        type : String,
     },
     price : {
         type : Number,
@@ -27,7 +27,7 @@ const orderSchema = mongoose.Schema({
     orderStatus : {
         type : Boolean,
         default : false,
-    },
-});
+    }
+})
 
-module.exports = mongoose.model('Orders',orderSchema);
+module.exports = mongoose.model('Orders', orderSchema);
