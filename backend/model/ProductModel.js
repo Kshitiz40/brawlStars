@@ -20,7 +20,15 @@ const productSchema = mongoose.Schema({
             data : Buffer,
             contentType : String,
         }
-    ]
+    ],
+    quantity : {
+        type : Number,
+        required : true,
+    },
+    type : {
+        type : String,
+        default : "Solid",
+    }
 })
 
 module.exports = mongoose.model('Product',productSchema);

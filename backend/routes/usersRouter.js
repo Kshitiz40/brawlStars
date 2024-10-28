@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser,loginUser,logout } = require('../controller/authController');
+const { registerUser,loginUser,logout, sendOTPToUser, verifyOTP } = require('../controller/authController');
 const { isLoggedIn } = require('../middlewares/isLoggedIn');
 const UserModel = require('../model/UserModel');
+const { isUserVerified } = require('../middlewares/isUserVerified');
+const { handleOrder } = require('../controller/orderController');
 
 router.get('/', (req,res) => {
     res.send("working rt");
@@ -10,7 +12,9 @@ router.get('/', (req,res) => {
 
 router.post('/register',registerUser);
 router.post('/login',loginUser);
-router.get('/logout',logout)
+router.get('/logout',logout);
+router.post('/sendOTP',isLoggedIn,sendOTPToUser);
+router.post('/verifyOTP',isLoggedIn,verifyOTP);
 
 //route to access cart of user - user need to be logged in
 router.get('/cart',isLoggedIn,async (req,res)=>{
@@ -33,6 +37,8 @@ router.post('/removeFromCart/:productID',isLoggedIn,async (req,res)=>{
     user.cart = newCart;
     await user.save();
     return res.status(200).json({msg : 'item removed from cart!'});
-})
+});
+
+router.post('/order',isLoggedIn,isUserVerified,handleOrder);
 
 module.exports = router;

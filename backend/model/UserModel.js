@@ -23,9 +23,6 @@ const userSchema = mongoose.Schema({
         type : Boolean,
         default : false,
     },
-    OTP : {
-        type : Number,
-    },
     cart : [
         {
             type : mongoose.Schema.Types.ObjectId,

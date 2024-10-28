@@ -115,7 +115,12 @@ router.get('/categories', isAdmin, async (req, res) => {
 //admin - add a product
 router.post('/addProduct',isAdmin, upload.array('images', 4), async (req, res) => {
     try {
-        const { name, description, price, discount, category } = req.body;
+        const { name, description, price, discount, category,quantity } = req.body;
+
+        //check if this categroy exists
+        let categoryExists = await categoriesModel.findOne({category});
+        if(!categoryExists) return res.status(400).json({msg : 'category do not exists!'});
+        const categoryID = categoryExists._id;
 
         const images = req.files.map(file => ({
             data: file.buffer,
@@ -123,7 +128,7 @@ router.post('/addProduct',isAdmin, upload.array('images', 4), async (req, res) =
         }));
 
         const newProduct = new productModel({
-            name, description, price, discount, category, images
+            name, description, price, discount, categoryID, quantity, images
         });
 
         await newProduct.save();
@@ -136,14 +141,21 @@ router.post('/addProduct',isAdmin, upload.array('images', 4), async (req, res) =
 //admin - edit a product
 router.post('/editProduct/:productID', isAdmin, upload.array('images', 4),async (req, res) => {
     try {
-        const { name, description, price, discount, category } = req.body;
+        
+        const { name, description, price, discount, category, quantity } = req.body;
+
+        //check if category exists
+        let categoryExists = await categoriesModel.findOne({category});
+        if(!categoryExists) return res.status(400).json({msg : 'category do not exists!'});
+        const categoryID = categoryExists._id;
+
         const images = req.files.map(file => ({
             data: file.buffer,
             contentType: file.mimetype,
         }));
         
         //check if product exists with given ID
-        let product = await productModel.findOneAndUpdate({_id : req.params.productID},{name,description,price,discount,category,images});
+        let product = await productModel.findOneAndUpdate({_id : req.params.productID},{name,description,price,discount,categoryID,quantity,images});
         if(!product) return res.status(400).json({msg : "product do not exists!"});
 
         res.status(201).json({ msg: "Product Edited successfully"});

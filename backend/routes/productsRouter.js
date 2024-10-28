@@ -27,8 +27,4 @@ router.get('/categories',async (req,res)=>{
     }
 })
 
-router.get('/categories',(req,res) => {
-    res.send("Working too")
-})
-
 module.exports = router;

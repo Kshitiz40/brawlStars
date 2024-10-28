@@ -1,6 +1,9 @@
-const userModel = require('../model/UserModel')
+const userModel = require('../model/UserModel');
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utilities/generateToken');
+const sendOTP = require('../utilities/sendOTP');
+const OTPModel = require('../model/OTPModel');
+const {generateOTP} = require('../utilities/generateOTP');
 
 exports.registerUser = async (req,res) => {
     //trying to create new user
@@ -19,7 +22,7 @@ exports.registerUser = async (req,res) => {
 
                 //creating new user
                 let user = await userModel.create({fullname,email,mobile,password:hash})
-
+                
                 //creating token to identify user
                 let token = generateToken(user);
 
@@ -36,6 +39,53 @@ exports.registerUser = async (req,res) => {
     }
     catch(error) {
         res.status(400).json({msg : 'something went wrong!'});
+    }
+}
+
+exports.sendOTPToUser = async (req,res) => {
+    const { email } = req.body;
+    try{
+        //make sure user have only one valid OTP at a time
+        let otpExists = await OTPModel.findOne({email});
+        if(otpExists) return res.status(400).json({msg : 'wait for 1 minute to send another OTP'});
+
+        //generate OTP
+        const otp = generateOTP();
+
+        //create a document for this verification in OTP Model
+        const createdOTP = await OTPModel.create({email,otp});
+
+        //send OTP to user through mail
+        await sendOTP(email,otp);
+        return res.status(201).json({msg : 'otp send succesfully'});
+
+    }catch(error){
+        return res.status(400).json({msg : `Error : ${error.message}`});
+    }
+}
+
+exports.verifyOTP = async (req,res) => { 
+    const { email,otp } = req.body;
+    try{
+        //find the document in OTP model
+        let otpRecord = await OTPModel.findOne({email,otp});
+        if(!otpRecord) return res.status(400).json({msg : 'invalid otp or otp expired'});
+
+        //find the corresponding user
+        let user = await userModel.findOne({email});
+        if(!user) return res.status(400).json({msg : 'no such user found'});
+
+        //verify user
+        user.isVerified = true;
+        await user.save();
+
+        //delete OTP document
+        let deletedOTP = await OTPModel.findOneAndDelete({_id : otpRecord._id});
+
+        return res.status(200).json({msg : 'user verified successfully!'});
+    }
+    catch(error){
+        return res.status(400).json({msg : `Error : ${error.message}`});
     }
 }
 

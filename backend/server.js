@@ -1,13 +1,7 @@
 const express = require('express');
-const cors = require('cors')
 const app = express();
 
-<<<<<<< HEAD
-app.use(cors({origin: 'http://localhost:3000'}));
-
-=======
 //enabling dotenv library to use env variables
->>>>>>> a00994d00fee5554ffcc1388534cf808c6a7f116
 const dotenv = require('dotenv')
 dotenv.config();
 
